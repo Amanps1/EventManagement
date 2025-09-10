@@ -1,4 +1,7 @@
 package com.example.eventmanagement.repository;
 
-public interface ResourceManagementRepository {
+import com.example.eventmanagement.model.Resources;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface ResourceManagementRepository extends JpaRepository<Resources,Long> {
 }
