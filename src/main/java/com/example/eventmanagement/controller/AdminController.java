@@ -7,7 +7,7 @@ import com.example.eventmanagement.dto.SystemStatisticsDto;
 import com.example.eventmanagement.request.SystemSettingsRequestDto;
 import com.example.eventmanagement.response.ApiResponse;
 import com.example.eventmanagement.service.admin.IAdminService;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,18 +15,18 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin")
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class AdminController {
     private final IAdminService adminService;
 
-    /** GET /api/admin/system-health */
+
     @GetMapping("/system-health")
     public ResponseEntity<ApiResponse> getSystemHealth() {
         SystemHealthDto dto = adminService.getSystemHealth();
         return ResponseEntity.ok(new ApiResponse("System health retrieved", dto));
     }
 
-    /** GET /api/admin/audit-logs */
+
     @GetMapping("/audit-logs")
     public ResponseEntity<ApiResponse> getAuditLogs() {
         List<AuditLogDto> logs = adminService.getAuditLogs();

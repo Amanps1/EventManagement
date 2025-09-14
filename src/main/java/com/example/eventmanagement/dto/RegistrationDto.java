@@ -17,6 +17,6 @@ public class RegistrationDto {
     private String address;
     private String phoneNumber;
     private String emergencyContact;
-    private User.Role role;
+    private User.RoleEnum role;
 
 }

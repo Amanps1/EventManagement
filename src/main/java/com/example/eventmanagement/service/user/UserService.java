@@ -2,21 +2,15 @@ package com.example.eventmanagement.service.user;
 
 import com.example.eventmanagement.dto.UserDto;
 import com.example.eventmanagement.exceptions.ResourceNotFoundException;
-import com.example.eventmanagement.model.Event;
-import com.example.eventmanagement.model.Notification;
-import com.example.eventmanagement.model.ResourceBooking;
-import com.example.eventmanagement.model.AuditLog;
+import com.example.eventmanagement.model.Role;
 import com.example.eventmanagement.model.User;
-import com.example.eventmanagement.model.Zone;
-import com.example.eventmanagement.model.EventApprovals;
+import com.example.eventmanagement.repository.RoleRepository;
 import com.example.eventmanagement.repository.UserRepository;
 import com.example.eventmanagement.request.UserProfileUpdateRequest;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,81 +20,95 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserService implements IUserService {
 
-    private final UserRepository userRepo;
-    private final ModelMapper modelMapper;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
 
-    // ✅ Get the current logged-in user profile
+
     @Override
     public UserDto getCurrentUserProfile() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String principal = auth.getName(); // username or email from JWT
-
-        User user = userRepo.findByUsernameIgnoreCaseOrEmailIgnoreCase(principal, principal)
-                .orElseThrow(() -> new ResourceNotFoundException("User not Found"));
-
+        Long userId = 1L;
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
         return convertUserToDto(user);
     }
 
+
     @Override
-    public List<UserDto> getAllUsers(int page, int size, String filter) {
-        Pageable pageable = PageRequest.of(page, size);
-        List<User> users = userRepo.findAll(pageable).getContent();
-        return users.stream().map(this::convertUserToDto).collect(Collectors.toList());
+    public Page<UserDto> getAllUsers(int page, int size, String filter) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<User> users;
+
+        if (filter != null && !filter.isEmpty()) {
+            users = userRepository.findAll(pageRequest)
+                    .map(u -> u)
+                    .map(user -> user);
+        } else {
+            users = userRepository.findAll(pageRequest);
+        }
+
+        List<UserDto> userDtos = users.getContent()
+                .stream()
+                .map(this::convertUserToDto)
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(userDtos, pageRequest, users.getTotalElements());
     }
+
 
     @Override
     public UserDto getUserById(Long id) {
-        User user = userRepo.findById(id)
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
         return convertUserToDto(user);
     }
 
-    @Override
-    public void updateUserRole(Long id, String role) {
-        User user = userRepo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
-        try {
-            User.Role roleEnum = User.Role.valueOf(role.toUpperCase());
-            user.setRole(roleEnum);
-            userRepo.save(user);
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Invalid role: " + role);
-        }
-    }
 
     @Override
-    public void deactivateUser(Long id) {
-        User user = userRepo.findById(id)
+    public void updateUserRole(Long id, String roleName) {
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
-        user.setActive(false);
-        userRepo.save(user);
+
+        Role role = roleRepository.findByName(User.RoleEnum.valueOf(roleName))
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found: " + roleName));
+
+        user.setRole(role);
+        userRepository.save(user);
     }
+
 
     @Override
     public List<UserDto> getUsersByZone(Long zoneId) {
-        List<User> users = userRepo.findByZoneId(zoneId);
-        return users.stream().map(this::convertUserToDto).collect(Collectors.toList());
+        List<User> users = userRepository.findByZoneId(zoneId);
+        return users.stream()
+                .map(this::convertUserToDto)
+                .collect(Collectors.toList());
     }
+
 
     @Override
     public void updateUserProfile(UserProfileUpdateRequest updateRequest) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String principal = auth.getName();
+        Long userId = 1L; // TODO: get from authentication context
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
-        User user = userRepo.findByUsernameIgnoreCaseOrEmailIgnoreCase(principal, principal)
-                .orElseThrow(() -> new ResourceNotFoundException("User not Found"));
+        if (updateRequest.getFirstName() != null) user.setFirstName(updateRequest.getFirstName());
+        if (updateRequest.getLastName() != null) user.setLastName(updateRequest.getLastName());
+        if (updateRequest.getAddress() != null) user.setAddress(updateRequest.getAddress());
+        if (updateRequest.getPhoneNumber() != null) user.setPhoneNumber(updateRequest.getPhoneNumber());
+        if (updateRequest.getEmergencyContact() != null) user.setEmergencyContact(updateRequest.getEmergencyContact());
 
-        user.setFirstName(updateRequest.getFirstName());
-        user.setLastName(updateRequest.getLastName());
-        user.setAddress(updateRequest.getAddress());
-        user.setPhoneNumber(updateRequest.getPhoneNumber());
-        user.setEmergencyContact(updateRequest.getEmergencyContact());
+        userRepository.save(user);
+    }
+    @Override
+    public void deactivateUser(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
 
-        userRepo.save(user);
+        user.setActive(false);
+        userRepository.save(user);
     }
 
-    // ✅ Convert User entity to UserDto
-    public UserDto convertUserToDto(User user) {
+    private UserDto convertUserToDto(User user) {
         UserDto dto = new UserDto();
         dto.setId(user.getId());
         dto.setUsername(user.getUsername());
@@ -114,18 +122,17 @@ public class UserService implements IUserService {
         dto.setEmailVerified(user.isEmailVerified());
         dto.setCreatedDate(user.getCreatedDate());
         dto.setLastLogin(user.getLastLogin());
-        dto.setRole(user.getRole());
+        dto.setRole(user.getRole() != null ? User.RoleEnum.valueOf(String.valueOf(user.getRole().getName())) : null);
         dto.setZoneId(user.getZone() != null ? user.getZone().getId() : null);
-
-        dto.setOrganizedEventIds(user.getOrganizedEvents().stream().map(Event::getId).toList());
-        dto.setApprovedEventIds(user.getApprovedEvents().stream().map(Event::getId).toList());
-        dto.setRegisteredEventIds(user.getEventRegistrations().stream().map(er -> er.getEvent().getId()).toList());
-        dto.setCoordinatedZoneIds(user.getCoordinatedZones().stream().map(Zone::getId).toList());
-        dto.setReviewIds(user.getReviews().stream().map(EventApprovals::getId).toList());
-        dto.setReceivedNotificationIds(user.getReceivedNotifications().stream().map(Notification::getId).toList());
-        dto.setSentNotificationIds(user.getSentNotifications().stream().map(Notification::getId).toList());
-        dto.setBookingIds(user.getBookings().stream().map(ResourceBooking::getId).toList());
-        dto.setAuditLogIds(user.getAuditLogs().stream().map(AuditLog::getId).toList());
+        dto.setOrganizedEventIds(user.getOrganizedEvents().stream().map(e -> e.getId()).collect(Collectors.toList()));
+        dto.setApprovedEventIds(user.getApprovedEvents().stream().map(e -> e.getId()).collect(Collectors.toList()));
+        dto.setRegisteredEventIds(user.getEventRegistrations().stream().map(r -> r.getId()).collect(Collectors.toList()));
+        dto.setCoordinatedZoneIds(user.getCoordinatedZones().stream().map(z -> z.getId()).collect(Collectors.toList()));
+        dto.setReviewIds(user.getReviews().stream().map(r -> r.getId()).collect(Collectors.toList()));
+        dto.setReceivedNotificationIds(user.getReceivedNotifications().stream().map(n -> n.getId()).collect(Collectors.toList()));
+        dto.setSentNotificationIds(user.getSentNotifications().stream().map(n -> n.getId()).collect(Collectors.toList()));
+        dto.setBookingIds(user.getBookings().stream().map(b -> b.getId()).collect(Collectors.toList()));
+        dto.setAuditLogIds(user.getAuditLogs().stream().map(a -> a.getId()).collect(Collectors.toList()));
 
         return dto;
     }

@@ -7,10 +7,13 @@ import com.example.eventmanagement.response.ApiResponse;
 import com.example.eventmanagement.service.user.IUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
@@ -35,10 +38,19 @@ public class UserController {
     public ResponseEntity<ApiResponse> getAllUsers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String filter){
-        List<UserDto> users=userService.getAllUsers(page,size,filter);
-        return ResponseEntity.ok(new ApiResponse("Success",users));
+            @RequestParam(required = false) String filter) {
+
+        Page<UserDto> userPage = userService.getAllUsers(page, size, filter);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("users", userPage.getContent());
+        response.put("currentPage", userPage.getNumber());
+        response.put("totalItems", userPage.getTotalElements());
+        response.put("totalPages", userPage.getTotalPages());
+
+        return ResponseEntity.ok(new ApiResponse("Success", response));
     }
+
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse> getUserById(@PathVariable Long id){

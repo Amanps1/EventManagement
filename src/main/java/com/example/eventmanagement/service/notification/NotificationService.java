@@ -77,7 +77,8 @@ public class NotificationService implements INotificationService {
 
     @Override
     public long getUnreadCount(Long recipientId) {
-        return notificationRepo.countUnreadByRecipient(recipientId);
+        throw new UnsupportedOperationException();
+//        return notificationRepo.countUnreadByRecipient(recipientId);
     }
 
     private NotificationDto toDto(Notification n) {

@@ -25,8 +25,8 @@ public class User {
     @Column(name="password_hash", nullable=false, length=255)
     private String passwordHash;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name="role", nullable=false)
+    @ManyToOne(cascade = CascadeType.REMOVE)
+    @JoinColumn(name = "role_id", referencedColumnName = "id", nullable = false)
     private Role role;
 
     @Column(name="first_name", nullable=false, length=50)
@@ -88,7 +88,7 @@ public class User {
     @OneToMany(mappedBy = "bookedBy", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ResourceBooking> bookings = new ArrayList<>();
 
-    public enum Role {
+    public static enum RoleEnum {
         RESIDENT, EVENT_ORGANIZER, ZONE_COORDINATOR, COMMUNITY_MANAGER, ADMIN
     }
 }

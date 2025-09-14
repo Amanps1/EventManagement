@@ -6,5 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface ZoneRepository extends JpaRepository<Zone,Long> {
-    Optional<Zone> findById(Long zoneId);
+    boolean existsByZoneName(String zoneName);
+    Optional<Zone> findByZoneName(String zoneName);
 }

@@ -4,7 +4,7 @@ import com.example.eventmanagement.dto.AnalyticDto;
 import com.example.eventmanagement.dto.AuditLogDto;
 import com.example.eventmanagement.response.ApiResponse;
 import com.example.eventmanagement.service.analytics.IAnalyticsService;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,10 +15,9 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api")
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class AnalysisController {
     private final IAnalyticsService analyticsService;
-
 
     @GetMapping("/analytics/events/summary")
     public ResponseEntity<ApiResponse> getEventAnalytics() {
@@ -31,13 +30,13 @@ public class AnalysisController {
     }
 
     // 8.11 Administrative
-    @GetMapping("/admin/system-health")
+    @GetMapping("/analytics/system-health")
     public ResponseEntity<ApiResponse> getSystemHealth() {
         AnalyticDto dto = analyticsService.getSystemHealth();
         return ResponseEntity.ok(new ApiResponse("System health retrieved", dto));
     }
 
-    @GetMapping("/admin/audit-logs")
+    @GetMapping("/analytics/audit-logs")
     public ResponseEntity<ApiResponse> getAuditLogs() {
         List<AuditLogDto> logs = analyticsService.getAuditLogs();
         return ResponseEntity.ok(new ApiResponse("Audit logs retrieved", logs));

@@ -1,6 +1,6 @@
 package com.example.eventmanagement.dto;
 
-import com.example.eventmanagement.model.User.Role;
+import com.example.eventmanagement.model.User;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -20,7 +20,7 @@ public class UserDto {
     private boolean emailVerified;
     private LocalDateTime createdDate;
     private LocalDateTime lastLogin;
-    private Role role;
+    private User.RoleEnum role;
     private Long zoneId;
     private List<Long> organizedEventIds;
     private List<Long> approvedEventIds;

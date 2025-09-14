@@ -15,7 +15,7 @@ import java.util.List;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @RestController
-@RequestMapping("api/events")
+@RequestMapping("/api/events")
 @RequiredArgsConstructor
 public class EventManagementController {
     private final IEventService eventService;
@@ -31,7 +31,7 @@ public class EventManagementController {
 
     @GetMapping
     public ResponseEntity<ApiResponse> getAllEvents(
-            @RequestParam(defaultValue = "10") int page,
+            @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "startDatetime") String sortBy) {
         try{

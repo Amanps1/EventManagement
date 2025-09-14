@@ -17,6 +17,8 @@ public interface EventManagementRepository extends JpaRepository<Event,Long> {
     @Query("SELECT e FROM Event e WHERE e.venue.zone.id = :zoneId")
     List<Event>findByZone(Long zoneId);
 
+
+
     @Query("SELECT e FROM Event e WHERE " +
             "(:keyword IS NULL OR LOWER(e.title) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
             "OR LOWER(e.description) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
