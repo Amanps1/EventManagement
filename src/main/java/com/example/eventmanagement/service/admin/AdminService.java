@@ -19,7 +19,7 @@ public class AdminService implements  IAdminService{
     private final UserRepository userRepo;
     private final ModelMapper modelMapper;
 
-    /** GET system health */
+
     public SystemHealthDto getSystemHealth() {
         SystemHealthDto dto = new SystemHealthDto();
         dto.setStatus("UP");
@@ -28,7 +28,7 @@ public class AdminService implements  IAdminService{
         return dto;
     }
 
-    /** GET audit logs */
+
     public List<AuditLogDto> getAuditLogs() {
         return auditLogRepo.findAll().stream()
                 .map(log -> {
@@ -40,7 +40,7 @@ public class AdminService implements  IAdminService{
                 .collect(Collectors.toList());
     }
 
-    /** GET user activity logs (audit logs filtered by action) */
+
     public List<AuditLogDto> getUserActivityLogs(Long userId) {
         return auditLogRepo.findAll().stream()
                 .filter(log -> log.getUser().getId().equals(userId))
@@ -53,12 +53,12 @@ public class AdminService implements  IAdminService{
                 .collect(Collectors.toList());
     }
 
-    /** POST backup (dummy for now) */
+
     public String triggerBackup() {
         return "System backup triggered successfully";
     }
 
-    /** GET statistics */
+
     public SystemStatisticsDto getSystemStatistics() {
         SystemStatisticsDto dto = new SystemStatisticsDto();
         dto.setTotalUsers(userRepo.count());
@@ -67,15 +67,15 @@ public class AdminService implements  IAdminService{
         return dto;
     }
 
-    /** PUT system settings */
+
     public String updateSystemSettings(String key, String value) {
-        // Save to DB table if you have settings entity
+
         return "System setting updated: " + key + "=" + value;
     }
 
     /** GET system settings */
     public String getSystemSettings() {
-        // Fetch from DB or config file
+
         return "System settings retrieved successfully";
     }
 }

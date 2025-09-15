@@ -72,7 +72,7 @@ public class AuthService implements IAuthService {
 
     @Override
     public ApiResponse refreshToken(String refreshToken) {
-        // ❌ No refresh token logic, just acknowledge
+
         return new ApiResponse("Refresh not required (no JWT used)", null);
     }
 
@@ -87,8 +87,8 @@ public class AuthService implements IAuthService {
 
     @Override
     public ApiResponse resetPassword(String token, String newPassword) {
-        // ❌ Token ignored since no JWT
-        User user = userRepo.findByEmail(token) // using token as email for simplicity
+
+        User user = userRepo.findByEmail(token)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         user.setPasswordHash(passwordEncoder.encode(newPassword));

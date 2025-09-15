@@ -23,7 +23,6 @@ public class Venue {
     @Column(name = "address", nullable = false, length = 200)
     private String address;
 
-    // A venue belongs to a zone
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "zone_id", nullable = false)
     private Zone zone;
